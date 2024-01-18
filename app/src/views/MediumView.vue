@@ -4,6 +4,8 @@
     import { useGraph } from '@/composables/graph'
     import Node from "@/components/Node.vue";
     import ButtonsView from "./ButtonsView.vue";
+    import { toast } from 'vue3-toastify';
+    import 'vue3-toastify/dist/index.css';
 
     const router = useRouter();
 
@@ -18,6 +20,8 @@
         [undefined, undefined, 0, undefined, 0, 0]
     ]);
     let tree = ref([]);
+    let points = 120;
+    let mistakes = 0;
 
     let th0 = ref(null);
     let th1 = ref(null);
@@ -82,71 +86,84 @@
         //considering each node with each node, the style will be added or the weight will be checked based on the received nodes(x, y)
         switch (true) {
             case ((x === 0 && y === 1) || (x === 1 && y === 0)):
-                setStyleOrCheckWeight(th0Style, th0, '--th0-weight-negative', w, 'side negative parent', null, '', th0, x, y);
+                setStyleOrCheckWeight(th0Style, th0, w, 'side negative parent', null, '', th0, x, y);
                 break;
             case ((x === 0 && y === 3) || (x === 3 && y === 0)):
-                setStyleOrCheckWeight(th0Style, th0, '--th0-weight-positive', w, 'side positive parent', null, '', th0, x, y, '-diagonal');
+                setStyleOrCheckWeight(th0Style, th0, w, 'side positive parent', null, '', th0, x, y, '-diagonal');
                 break;
             case ((x === 1 && y === 2) || (x === 2 && y === 1)):
-                setStyleOrCheckWeight(th1Style, th1, '--th1-weight', w, 'source', null, '', th1, x, y);
+                setStyleOrCheckWeight(th1Style, th1, w, 'source', null, '', th1, x, y);
                 break;
             case ((x === 1 && y === 4) || (x === 4 && y === 1)):
-                setStyleOrCheckWeight(th1Style, th4, '--th4-diagonal-weight', w, 'node-diagonal positive', th4Style, 'node-diagonal node-number positive', th1, x, y, '-diagonal');
+                setStyleOrCheckWeight(th1Style, th4, w, 'node-diagonal positive', th4Style, 'node-diagonal node-number positive', th1, x, y, '-diagonal');
                 break;
             case ((x === 2 && y === 4) || (x === 4 && y === 2)):
-                setStyleOrCheckWeight(th2Style, th2, '--th2-weight', w, 'node-bottom', null, '', th2, x, y);
+                setStyleOrCheckWeight(th2Style, th2, w, 'node-bottom', null, '', th2, x, y);
                 break;
             case ((x === 2 && y === 3) || (x === 3 && y === 2)):
-                setStyleOrCheckWeight(th2Style, th3, '--th3-diagonal-weight', w, 'node-diagonal negative', th3Style, 'node-diagonal node-number negative', th2, x, y, '-diagonal');
+                setStyleOrCheckWeight(th2Style, th3, w, 'node-diagonal negative', th3Style, 'node-diagonal node-number negative', th2, x, y, '-diagonal');
                 break;
             case ((x === 1 && y === 3) || (x === 3 && y === 1)):
-                setStyleOrCheckWeight(th3Style, th3, '--th3-weight', w, 'node-top', null, '', th3, x, y);
+                setStyleOrCheckWeight(th3Style, th3, w, 'node-top', null, '', th3, x, y);
                 break;
             case ((x === 3 && y === 4) || (x === 4 && y === 3)):
-                setStyleOrCheckWeight(th4Style, th4, '--th4-weight', w, 'node-left', null, '', th4, x, y);
+                setStyleOrCheckWeight(th4Style, th4, w, 'node-left', null, '', th4, x, y);
                 break;
             case ((x === 5 && y === 2) || (x === 2 && y === 5)):
-                setStyleOrCheckWeight(th5Style, th5, '--th5-weight-negative', w, 'side negative tail', null, '', th5, x, y);
+                setStyleOrCheckWeight(th5Style, th5, w, 'side negative tail', null, '', th5, x, y);
                 break;
             case ((x === 5 && y === 4) || (x === 4 && y === 5)):
-                setStyleOrCheckWeight(th5Style, th5, '--th5-weight-positive', w, 'side positive tail', null, '', th5, x, y, '-diagonal');
+                setStyleOrCheckWeight(th5Style, th5, w, 'side positive tail', null, '', th5, x, y, '-diagonal');
                 break;
             default:
                 break;
         }
     }
 
-    function setStyleOrCheckWeight(elStyleRef, wRef, contentName, w, elStyle, diagonalStyleRef, diagonalStyle, borderRef, x, y, diagonal = '') {
+    function setStyleOrCheckWeight(elStyleRef, wRef, w, elStyle, diagonalStyleRef, diagonalStyle, borderRef, x, y, diagonal = '') {
         //when weight(w) is not null it is the initial state, where we draw the borders and weights
         //otherwise, when the weight is null, it means that two nodes have been clicked and we need... 
         //...to check if the selected edge is the correct one
         if (w) {
-            setStyle(elStyleRef, wRef, contentName, w, elStyle, diagonalStyleRef, diagonalStyle);
+            setStyle(elStyleRef, wRef, w, elStyle, diagonalStyleRef, diagonalStyle, diagonal);
         } else {
-            checkWeight(wRef, contentName, borderRef, x, y, diagonal);
+            checkWeight(wRef, borderRef, x, y, diagonal);
         }
     }
 
-    function setStyle(elStyleRef, elRef, contentName, w, elStyle, diagonalStyleRef = null, diagonalStyle = '') {
+    function setStyle(elStyleRef, elRef, w, elStyle, diagonalStyleRef = null, diagonalStyle = '', diagonal) {
         elStyleRef.value = elStyleRef.value === "" ? `node ${elStyle}` : elStyleRef.value + ` ${elStyle}`;
-        elRef.value.nodeRef.style.setProperty(contentName, `"${w}"`);
+        
+        let elNum = elRef.value.nodeRef.innerText;
+        elRef.value.nodeRef.style.setProperty(`--th${elNum}${diagonal}-weight`, `"${w}"`);
         
         if (diagonalStyleRef) {
             diagonalStyleRef.value = diagonalStyleRef.value === "" ? `node ${diagonalStyle}` : diagonalStyleRef.value + ` ${diagonalStyle}`;
         }
     }
 
-    function checkWeight(elRef, contentName, borderRef, x, y, diagonal = '') {
-        let thisW = elRef.value.nodeRef.style.getPropertyValue(contentName).slice(1, -1);
+    function checkWeight(elRef, borderRef, x, y, diagonal = '') {
+        let elNum = elRef.value.nodeRef.innerText;
+        let thisW = elRef.value.nodeRef.style.getPropertyValue(`--th${elNum}${diagonal}-weight`).slice(1, -1);
 
         clickedNodesInfo.value.push([x, y, +thisW]);
 
         if (+thisW === tree.value[0]) {
             borderRef.value.nodeRef.classList.add(`green-border${diagonal}`);
+            toast.success("Correct! Well done!", {
+                autoClose: 2000,
+            });
             tree.value.shift();
         }
         else {
-            borderRef.value.nodeRef.classList.add(`red-border${diagonal}`);
+            let borderNum = borderRef.value.nodeRef.innerText;
+            borderRef.value.nodeRef.style.setProperty(`--th${borderNum}${diagonal}-animation`, 'border-color');
+            toast.error("Wrong! -7 points", {
+                autoClose: 2000,
+            });
+
+            points = points > 0 ? points - 7 : 0;
+            mistakes ++;
         }
     }
     /*-------------------------------END SET NODE DATA-------------------------------*/
@@ -156,7 +173,8 @@
             clickedNodes.value.push(e);
 
             e.classList.add('bg-orange-500');
-            e.classList.remove('animation-none');
+            e.style.setProperty(`--th${e.innerText}-animation`, '');
+            e.style.setProperty(`--th${e.innerText}-diagonal-animation`, '');
         }
         else if (clickedNodes.value.includes(e) && tree.value.length > 0) {
             clickedNodes.value.shift(e);
@@ -177,7 +195,24 @@
     }
 
     function onSubmit() {
-        console.log("ok");
+        localStorage.setItem('points', points);
+        localStorage.setItem('mistakes', mistakes);
+        router.push({name: 'result'});
+    }
+
+    function addAnimation() {
+        th0.value.nodeRef.style.setProperty('--th0-animation', "medium-node-side");
+        th0.value.nodeRef.style.setProperty('--th0-diagonal-animation', "medium-node-side");
+        th5.value.nodeRef.style.setProperty('--th5-animation', "medium-node-side");
+        th5.value.nodeRef.style.setProperty('--th5-diagonal-animation', "medium-node-side");
+        th1.value.nodeRef.style.setProperty('--th1-animation', "medium-node-x");
+        th4.value.nodeRef.style.setProperty('--th4-animation', "medium-node-x");
+        th2.value.nodeRef.style.setProperty('--th2-animation', "medium-node-y");
+        th3.value.nodeRef.style.setProperty('--th3-animation', "medium-node-y");
+        th1.value.nodeRef.style.setProperty('--th1-diagonal-animation', "medium-node-diagonal");
+        th2.value.nodeRef.style.setProperty('--th2-diagonal-animation', "medium-node-diagonal");
+        th3.value.nodeRef.style.setProperty('--th3-diagonal-animation', "medium-node-diagonal");
+        th4.value.nodeRef.style.setProperty('--th4-diagonal-animation', "medium-node-diagonal");
     }
 
     function initialize() {
@@ -220,7 +255,11 @@
 
      /****************************************** LIFCYCLE HOOKS **********************************************/
      onMounted(() => {
+        addAnimation();
         initialize();
+        toast.info("The maximum points are 120. For each wrong guess you loose 7 points. Good luck!", {
+            autoClose: 6000,
+        });
     });
 
     onUnmounted(() => {
@@ -306,11 +345,12 @@
         width: 87px;
         line-height: 34px;
         position: absolute;
-        animation: medium-node-side 1.5s;
+        animation-duration: 1.5s;
     }
 
     .node.parent.negative::after {
-        content: var(--th0-weight-negative);
+        content: var(--th0-weight);
+        animation-name: var(--th0-animation);
         left: 45px;
         bottom: 35px;
         transform: rotate(-43deg);
@@ -318,7 +358,8 @@
     }
 
     .node.tail.negative::after {
-        content: var(--th5-weight-negative);
+        content: var(--th5-weight);
+        animation-name: var(--th5-animation);
         right: 45px;
         bottom: 35px;
         transform: rotate(43deg);
@@ -326,7 +367,8 @@
     }
 
     .node.tail.positive::before {
-        content: var(--th5-weight-positive);
+        content: var(--th5-diagonal-weight);
+        animation-name: var(--th5-diagonal-animation);
         right: 45px;
         bottom: 13px;
         transform: rotate(-43deg);
@@ -334,7 +376,8 @@
     }
 
     .node.parent.positive::before {
-        content: var(--th0-weight-positive);
+        content: var(--th0-diagonal-weight);
+        animation-name: var(--th0-diagonal-animation);
         left: 45px;
         bottom: 13px;
         transform: rotate(43deg);
@@ -344,16 +387,18 @@
     .node.source::after, .node-left::after {
         width: 104px;
         line-height: 34px;
-        animation: medium-node-x 1.5s;
+        animation-duration: 1.5s;
     }
 
     .node.source::after {
         content: var(--th1-weight);
+        animation-name: var(--th1-animation);
         left: 48px;
     }
 
     .node-left::after {
         content: var(--th4-weight);
+        animation-name: var(--th4-animation);
         left: unset;
         right: 48px;
     }
@@ -362,11 +407,12 @@
         width: 130px;
         line-height: 34px;
         transform-origin: left;
-        animation: medium-node-y 1.5s;
+        animation-duration: 1.5s;
     }
 
     .node-bottom::after {
         content: var(--th2-weight);
+        animation-name: var(--th2-animation);
         transform: rotate(90deg);
         left: 25px;
         top: 45px;
@@ -374,6 +420,7 @@
 
     .node-top::after {
         content: var(--th3-weight);
+        animation-name: var(--th3-animation);
         transform: rotate(270deg);
         left: 24px;
         bottom: 45px;
@@ -387,16 +434,18 @@
         display: inline-block;
         position: absolute;
         top: 38px;
-        animation: medium-node-diagonal 1.5s;
+        animation-duration: 1.5s;
     }
 
     .node-diagonal.negative::before {
+        animation-name: var(--th2-diagonal-animation);
         transform-origin: top right;
         transform: rotate(-48deg);
         right: 42px;
     }
 
     .node-diagonal.positive::before {
+        animation-name: var(--th1-diagonal-animation);
         transform-origin: top left;
         transform: rotate(48deg);
         left: 42px;
@@ -411,6 +460,7 @@
 
     .node-number.positive::before {
         content: var(--th4-diagonal-weight);
+        animation-name: var(--th4-diagonal-animation);
         transform-origin: bottom right;
         transform: rotate(46deg) translate(-46px, -38px);
         top: unset;
@@ -420,6 +470,7 @@
 
     .node-number.negative::before {
         content: var(--th3-diagonal-weight);
+        animation-name: var(--th3-diagonal-animation);
         transform-origin: bottom left;
         transform: rotate(-46deg) translate(-44px, -5px);
         top: unset;
