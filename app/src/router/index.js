@@ -3,6 +3,7 @@ import HomeView from '../views/HomeView.vue'
 import EasyView from '../views/EasyView.vue'
 import MediumView from '../views/MediumView.vue'
 import HardView from '../views/HardView.vue'
+import ResultView from '../views/ResultView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -26,6 +27,11 @@ const router = createRouter({
       path: '/hard',
       name: 'hard',
       component: HardView
+    },
+    {
+      path: '/result',
+      name: 'result',
+      component: ResultView
     }
   ]
 })
