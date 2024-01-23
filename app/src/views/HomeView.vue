@@ -1,7 +1,12 @@
 <script setup>
+import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import Modal from "@/components/util/Modal.vue";
+import HelpView from './HelpView.vue';
 
-const router = useRouter()
+const router = useRouter();
+
+let modalVisible = ref(false);
 
 const goToEasyView = () => {
   router.push({name: 'easy'});
@@ -13,6 +18,10 @@ const goToMediumView = () => {
 
 const goToHardView = () => {
   router.push({name: 'hard'});
+}
+
+const onClose = () => {
+  modalVisible.value = false;
 }
 </script>
 
@@ -37,9 +46,15 @@ const goToHardView = () => {
     </div>
     <div class="info flex justify-between pt-9">
       <p class="text-slate-800">Don't know how it works?</p>
-      <a href="#" class="text-cyan-700 hover:text-cyan-600">Work it out here!</a>
+      <a href="#" @click.prevent="modalVisible = true" class="text-cyan-700 hover:text-cyan-600">Work it out here!</a>
     </div>
   </div>
+  <Modal :isVisible="modalVisible"
+         @onClose="onClose"
+         title="Introduction to Prim’s Algorithm"
+  >
+  <HelpView></HelpView>
+  </Modal>
 </template>
 
 <style>

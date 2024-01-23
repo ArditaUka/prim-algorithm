@@ -97,8 +97,8 @@ onUnmounted(() => {
 }
 
 .bulb-wrapper span {
-    font-size: 150px;
-    line-height: 150px;
+    font-size: 124px;
+    line-height: 124px;
     color: #F5C001;
 }
 
