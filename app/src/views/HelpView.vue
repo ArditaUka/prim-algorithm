@@ -20,7 +20,7 @@
         <p><b>Step 1:</b> Firstly, we select an arbitrary node that acts as the starting node of the Minimum Spanning Tree. Here we have selected node 0 as the starting node.</p>
         <img src="../assets/img/step1.PNG" alt="Step1">
     </div>
-    <div class="graph_step mt-2">
+    <!-- <div class="graph_step mt-2">
         <p><b>Step 2:</b> All the edges connecting the incomplete MST and other nodes are the edges {0, 1} and {0, 2}. Between these two the edge with minimum weight is {0, 1}. So include the edge and node 1 in the MST.</p>
         <img src="../assets/img/step2.PNG" alt="Step2">
     </div>
@@ -47,7 +47,7 @@
     <div class="graph_step mt-2">
         <p><b>Step 8:</b> Only  the node 7 remains to be included. The minimum weighted edge from the incomplete MST to 7 is {5, 7}. And this is the final structure of MST</p>
         <img src="../assets/img/step8.PNG" alt="Step8">
-    </div>
+    </div> -->
 </template>
 <style>
 .graph_step img {
