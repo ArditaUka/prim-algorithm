@@ -20,7 +20,7 @@
                     <div class="flex justify-between items-center">
                         <h3 class="text-2xl font-semibold">{{ title }}</h3>
                         <button class="p-1 leading-none" @click="$emit('onClose')">
-                            <div class="text-3xl"><span class="mdi mdi-close-box text-slate-400  hover:text-slate-500"></span></div>
+                            <div class="text-3xl"><span class="mdi mdi-close-box text-slate-500  hover:text-slate-400"></span></div>
                         </button>
                     </div>
                 </div>
@@ -28,7 +28,7 @@
                     <slot></slot>
                 </div>
                 <div class="p-6 flex justify-end items-center">
-                    <button class="bg-slate-400 hover:bg-slate-500 text-white font-bold py-2 px-4 border rounded caret-transparent"
+                    <button class="bg-slate-500 hover:bg-slate-400 text-white font-bold py-2 px-4 border rounded caret-transparent"
                             @click="$emit('onClose')">
                         OK
                     </button>

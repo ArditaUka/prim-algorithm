@@ -6,6 +6,8 @@ import HelpView from './HelpView.vue';
 
 const router = useRouter();
 
+const emit = defineEmits(['onNodesClicked']);
+
 let modalVisible = ref(false);
 
 const goToEasyView = () => {
