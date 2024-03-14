@@ -15,7 +15,7 @@ export function useGraph(numOfEdges, graph, setNodeData, V, tree, level='easy') 
         let y = Math.floor(Math.random() * (nrOfNodes - 0 + 1)) + 0;
 
         //I'm setting the weight to be between 20-200
-        let w = Math.floor(Math.random() * (100 - 20 + 1)) + 20;
+        let w = Math.floor(Math.random() * (60 - 20 + 1)) + 20;
         
         //if x is equal to y or if path x,y already has a weight or that weight is undefined generate new paths for this edge
         while (x === y || (graph[x][y] !== 0 ) || graph[x][y] == undefined) {
@@ -35,7 +35,7 @@ export function useGraph(numOfEdges, graph, setNodeData, V, tree, level='easy') 
             let x = 0;
             let y = 0;
 
-            let w = Math.floor(Math.random() * (100 - 20 + 1)) + 20;
+            let w = Math.floor(Math.random() * (60 - 20 + 1)) + 20;
 
             while (x === y || graph[x][y] === undefined) {
                 x = index;

@@ -187,19 +187,161 @@
     }
     /*-------------------------------END SET NODE DATA-------------------------------*/
 
-    function onNodeClicked(e) {
-        if (!clickedNodes.value.includes(e) && tree.value.length > 0) {
-            clickedNodes.value.push(e);
-
-            e.classList.add('bg-orange-500');
-            e.style.setProperty(`--th${e.innerText}-animation`, '');
-            e.style.setProperty(`--th${e.innerText}-diagonal-animation`, '');
+    /*************************HANDLE THE CLICKED NODE OR EDGE************************/
+    function onNodeClicked(event) {
+        let nodeRef = event.currentTarget;
+        
+        if (isEdgeClicked(event)[0] || isEdgeClicked(event)[1]) {
+            onEdgeClicked(
+                nodeRef,
+                isEdgeClicked(event)[0] ? 'after' : 'before'
+            )
         }
-        else if (clickedNodes.value.includes(e) && tree.value.length > 0) {
-            clickedNodes.value.shift(e);
-            e.classList.remove('bg-orange-500');
+        else {
+            if (!clickedNodes.value.includes(nodeRef) && tree.value.length > 0) {
+                clickedNodes.value.push(nodeRef);
+    
+                nodeRef.classList.add('bg-orange-500');
+                nodeRef.style.setProperty(`--th${nodeRef.innerText}-animation`, '');
+                nodeRef.style.setProperty(`--th${nodeRef.innerText}-diagonal-animation`, '');
+            }
+            else if (clickedNodes.value.includes(nodeRef) && tree.value.length > 0) {
+                clickedNodes.value.shift(nodeRef);
+                nodeRef.classList.remove('bg-orange-500');
+            }
         }
     }
+
+    function isEdgeClicked(e) {
+        let after = getComputedStyle(e.currentTarget, ":after")
+        let before = getComputedStyle(e.currentTarget, ":before")
+
+        //get the mouse position
+        let ex = e.layerX
+        let ey = e.layerY
+
+        let finalRes = [];
+
+        if (after) {
+            finalRes.push(checkAfterPE(after, ex, ey))
+        } 
+
+        if (before) {
+            finalRes.push(checkBeforePE(before, ex, ey))
+        }
+        
+        return finalRes
+    }
+
+    function checkAfterPE(after, ex, ey) {
+        // Then we parse out the dimensions
+        let atop = Number(after.getPropertyValue("top").slice(0, -2))
+        const aheight = Number(after.getPropertyValue("height").slice(0, -2))
+        let aleft = Number(after.getPropertyValue("left").slice(0, -2))
+        const awidth = Number(after.getPropertyValue("width").slice(0, -2))
+
+        //if the pseudo element is rotated take the rotated values into consideration
+        const rot = after.getPropertyValue('transform') !== 'none' ? after.getPropertyValue('transform') : null;
+        const rotationAngle = rot ? extractRotationAngle(rot) : null;
+        
+        if (rot) {
+            if (rotationAngle === -90 || Math.round(rotationAngle) == 48 || Math.round(rotationAngle) == -48) {
+                ey += awidth;
+            }
+
+            ex += aheight 
+        }
+        
+        const res = ex >= aleft && ((ex <= aleft + awidth) || (rot && ex <= aleft + aheight)) && ey >= atop && ((ey <= atop + aheight) || (rot && ey <= atop + awidth))
+        
+        return res
+    }
+
+    function checkBeforePE(before, ex, ey) {
+        // Then we parse out the dimensions
+        let atop = Number(before.getPropertyValue("top").slice(0, -2))
+        const aheight = Number(before.getPropertyValue("height").slice(0, -2))
+        let aleft = Number(before.getPropertyValue("left").slice(0, -2))
+        const awidth = Number(before.getPropertyValue("width").slice(0, -2))
+
+        const rot = before.getPropertyValue('transform') !== 'none' ? before.getPropertyValue('transform') : null;
+        const rotationAngle = rot ? extractRotationAngle(rot) : null;
+
+        if (rotationAngle == -90) {
+            ey += awidth
+            ex += aheight
+        }
+
+        const res = ex >= aleft && ex <= aleft + awidth && ey >= atop && ey <= atop+awidth
+        
+        return res
+    }
+
+    function extractRotationAngle(transformMatrix) {
+        // Parse the transform matrix
+        const matrixValues = transformMatrix.match(/matrix\((.*)\)/)[1].split(',').map(parseFloat);
+
+        // Calculate the rotation angle in radians
+        const angleRadians = Math.atan2(matrixValues[1], matrixValues[0]);
+
+        // Convert radians to degrees
+        const angleDegrees = angleRadians * (180 / Math.PI);
+
+        return angleDegrees;
+    }
+
+    function onEdgeClicked(e, type) {
+        e.style.setProperty(`--th${e.innerText}-animation`, '');
+        e.style.setProperty(`--th${e.innerText}-diagonal-animation`, '');
+
+        const x = parseInt(e.innerText)
+        const y = getNodesFromEdge(x, type)
+
+        setNodeData(x, y)
+
+        emit('onNodesClicked', clickedNodesInfo.value);
+    }
+
+    function getNodesFromEdge(x, type) {
+        if (type == "after") {
+            switch (x) {
+                case 0: 
+                    return 1
+                case 1: 
+                    return 3
+                case 3: 
+                    return 5
+                case 5: 
+                    return 6
+                case 6: 
+                    return 4
+                case 4: 
+                    return 2
+                case 2: 
+                    return 1
+                case 7: 
+                    return 5
+                default:
+                    break;
+            }
+        } else {
+            switch (x) {
+                case 0: 
+                    return 2
+                case 5: 
+                    return 2
+                case 1: 
+                    return 6
+                case 4: 
+                    return 3
+                case 7: 
+                    return 6
+                default:
+                    break;
+            }
+        }
+    }
+    /***********************END HANDLE THE CLICKED NODE OR EDGE**********************/
 
     function onGoBack() {
         router.push({name: 'home'});
@@ -351,7 +493,7 @@
 
     @keyframes hard-node-y {
         0% {width: 0;}
-        100% {width:145px;}
+        100% {width:144px;}
     }
 
     @keyframes hard-node-diagonal {
@@ -361,7 +503,7 @@
     }
     @keyframes hard-node-side {
         0% {width: 0;}
-        100% {width:85px;}
+        100% {width:84px;}
     }
 
     .node::after, .node::before {
@@ -374,7 +516,7 @@
     }
 
     .node.side.negative::after, .node.side.positive::before {
-        width: 85px;
+        width: 84px;
         line-height: 34px;
         position: absolute;
         animation-duration: 1.5s;
@@ -384,7 +526,7 @@
         content: var(--th0-weight);
         animation-name: var(--th0-animation);
         left: 33px;
-        bottom: 33px;
+        bottom: 34px;
         transform: rotate(-48deg);
         transform-origin: bottom left;
     }
@@ -402,7 +544,7 @@
         content: var(--th7-weight);
         animation-name: var(--th7-animation);
         right: 33px;
-        bottom: 33px;
+        bottom: 34px;
         transform: rotate(48deg);
         transform-origin: bottom right;
     }
@@ -452,7 +594,7 @@
     }
 
     .node-top::after, .node-bottom::after, .st-top::before {
-        width: 145px;
+        width: 144px;
         line-height: 34px;
         transform-origin: left;
         animation-duration: 1.5s;
@@ -461,7 +603,7 @@
     .node-top::after, .st-top::before {
         transform: rotate(270deg);
         left: 21px;
-        bottom: 37px;
+        bottom: 38px;
     }
 
     .node-top::after {
@@ -488,7 +630,7 @@
         background-color: black;
         display: inline-block;
         position: absolute;
-        top: 33px;
+        top: 32px;
         animation-duration: 1.5s;
     }
 
@@ -496,7 +638,7 @@
         animation-name: var(--th5-diagonal-animation);
         transform-origin: top right;
         transform: rotate(-43deg);
-        right: 34px;
+        right: 35px;
     }
 
     .node-diagonal.positive::before {
@@ -508,6 +650,7 @@
 
     .node-number::before {
         content: "";
+        width: 0;
         text-align: center;
         bottom: 0px;
         background-color: transparent;
@@ -515,9 +658,9 @@
 
     .node-number.positive::before {
         content: var(--th6-diagonal-weight);
-        animation-name: var(--th6-diagonal-animation);
+        animation: none;
         transform-origin: bottom right;
-        transform: rotate(46deg) translate(-52px, -61px);
+        transform: rotate(46deg) translate(-170px, -64px);
         top: unset;
         right: 75px;
         left: unset;
@@ -525,9 +668,9 @@
 
     .node-number.negative::before {
         content: var(--th2-diagonal-weight);
-        animation-name: var(--th2-diagonal-animation);
+        animation: none;
         transform-origin: bottom left;
-        transform: rotate(-46deg) translate(-65px, -41px);
+        transform: rotate(-46deg) translate(46px, -41px);
         top: unset;
         left: 75px;
         right: unset;
@@ -535,10 +678,10 @@
 
     .node-number.plain::before {
         content: var(--th3-diagonal-weight);
-        animation-name: var(--th3-diagonal-animation);
+        animation: none;
         transform-origin: top;
         bottom: unset;
-        transform: rotate(270deg) translate(-55px, -76px);
+        transform: rotate(270deg) translate(-60px, -5px);
     }
 
     

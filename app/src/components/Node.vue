@@ -32,6 +32,10 @@
 
     const nodeRef = ref(null);
 
+    function onNodeClicked(event) {
+        emit('onNodeClicked', event)
+    }
+
     defineExpose({
         nodeRef
     });
@@ -44,7 +48,7 @@
         class="rounded-full bg-cyan-900 flex justify-center items-center cursor-pointer"
         :class="[customStyle]"
         :style="{width:`${width}px`, height:`${height}px`}"
-        @click="$emit('onNodeClicked', nodeRef)">
+        @click="onNodeClicked">
         <p class="text-white caret-transparent"
            :style="{fontSize:`${textSize}px`}">
             {{ content }}

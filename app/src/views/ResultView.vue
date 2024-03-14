@@ -35,7 +35,6 @@ function initialize() {
     points.value = localStorage.getItem('points');
     mistakes.value = localStorage.getItem('mistakes');
     getTextContent();
-    console.log(comment.value);
 }
 
 onMounted(() => {
