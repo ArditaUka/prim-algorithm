@@ -11,9 +11,9 @@ function onNodesClicked(params) {
 
 <template>
     <div class="min-h-screen bg-gray-100 flex flex-col items-center justify-center">
-      <div class="flex mb-10">
+      <div class="flex mb-8 ml-2 mt-2 flex-wrap">
         <div v-for="n in listOfNodes"
-            class="px-3 py-2 bg-orange-300 font-medium text-cyan-950 mr-4 rounded-3xl"
+            class="l-nodes px-3 py-2 mb-2 bg-orange-300 font-medium text-cyan-950 mr-4 rounded-3xl"
         >
           [{{ n[0] }}, {{ n[1] }}] -> {{ n[2] }}
         </div>
@@ -26,3 +26,9 @@ function onNodesClicked(params) {
       <RouterView @onNodesClicked="onNodesClicked"/>
     </div>
 </template>
+
+<style>
+.l-nodes {
+  text-wrap: nowrap;
+}
+</style>
